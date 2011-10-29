@@ -40,6 +40,8 @@ class testApp : public ofBaseApp{
         bool drawPolygon;
         bool recording;
     
+    float blendDistance;
+    
         float distanceFromPoly(const ofPoint & p, const vector<ofPoint> & poly);
         float distanceFromLine(const ofPoint & p, const ofPoint & l1, const ofPoint & l2);
 

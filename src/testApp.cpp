@@ -16,7 +16,7 @@ void testApp::setup(){
     drawPolygon = true;    
     //gifEncoder.setDitherMode(OFX_GIF_DITHER_BAYER4x4);
     
-    gifFrameDensity = 2;
+    gifFrameDensity = 3;
     targetNumFrames = movie.getTotalNumFrames() / gifFrameDensity;
     
     float movieFrameRate = movie.getTotalNumFrames()/movie.getDuration();
@@ -24,9 +24,11 @@ void testApp::setup(){
     cout << movieFrameRate <<endl;
     
     movieFrame = 0;    
-    gifEncoder.setup(movie.getWidth(), movie.getHeight(), (gifFrameDensity+1)/movieFrameRate, 125);
+    gifEncoder.setup(movie.getWidth(), movie.getHeight(), (gifFrameDensity+1)/movieFrameRate, 256);
     
     recording = false;
+    
+    blendDistance = 20;
 
 }
 
@@ -48,7 +50,15 @@ void testApp::draw(){
                 ofPoint p = ofPoint(x,y);
                 
                 if(ofInsidePoly(p, polygonPoints)){
-                    if(distanceFromPoly(p, polygonPoints) < 10){
+                    float d = distanceFromPoly(p, polygonPoints);
+                    float blendAmount = ofMap(d, 0, blendDistance, 0, 1);
+                    blendAmount = ofClamp(blendAmount, 0, 1);
+                    
+                    outputPixels[i*3+0] = moviePixels[i*3+0] * blendAmount + backgroundPixels[i*3+0] * (1-blendAmount);
+                    outputPixels[i*3+1] = moviePixels[i*3+1] * blendAmount + backgroundPixels[i*3+1] * (1-blendAmount);
+                    outputPixels[i*3+2] = moviePixels[i*3+2] * blendAmount + backgroundPixels[i*3+2] * (1-blendAmount);
+                    
+                    /*if(d < 10){
                         outputPixels[i*3+0] = 255;
                         outputPixels[i*3+1] = 0;
                         outputPixels[i*3+2] = 0;
@@ -57,7 +67,8 @@ void testApp::draw(){
                     outputPixels[i*3+0] = moviePixels[i*3+0];
                     outputPixels[i*3+1] = moviePixels[i*3+1];
                     outputPixels[i*3+2] = moviePixels[i*3+2];
-                    }
+                    
+                    }*/
                 } else {
                     outputPixels[i*3+0] = backgroundPixels[i*3+0];
                     outputPixels[i*3+1] = backgroundPixels[i*3+1];
@@ -138,18 +149,11 @@ float testApp::distanceFromPoly(const ofPoint & p, const vector<ofPoint> & poly)
         ofPoint currentPoint = poly.at(i);
         ofPoint previousPoint = poly.at(previousIndex);
         
-        
         float segmentDistance = distanceFromLine(ofPoint(p.x,p.y), previousPoint, currentPoint);
-        
         
         if(segmentDistance < result){
             result = segmentDistance;
         }
-         
-        
-        
-        
-        
     }
     
     return result;
@@ -170,12 +174,6 @@ void testApp::keyReleased(int key){
 
 //--------------------------------------------------------------
 void testApp::mouseMoved(int x, int y ){
-    //vector<ofPoint> diagnolLine;
-    //diagnolLine.push_back(ofPoint(0,0));
-    //diagnolLine.push_back(ofPoint(ofGetWidth(), ofGetHeight()));
-  
-    cout << distanceFromPoly(ofPoint(x,y), polygonPoints) << endl;
-    //cout << distanceFromLine(ofPoint(x,y), ofPoint(0,0), ofPoint(ofGetWidth(), ofGetHeight())) << endl;
 }
 
 //--------------------------------------------------------------
