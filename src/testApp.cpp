@@ -45,10 +45,19 @@ void testApp::draw(){
             for(int x = 0; x < movie.getWidth(); x++){
                 int i = y * movie.getWidth() + x;
             
-                if(pointInPolygon(&polygonPoints, polygonPoints.size(), ofPoint(x,y))){
+                ofPoint p = ofPoint(x,y);
+                
+                if(ofInsidePoly(p, polygonPoints)){
+                    if(distanceFromPoly(p, polygonPoints) < 10){
+                        outputPixels[i*3+0] = 255;
+                        outputPixels[i*3+1] = 0;
+                        outputPixels[i*3+2] = 0;
+                    } else {
+                    
                     outputPixels[i*3+0] = moviePixels[i*3+0];
                     outputPixels[i*3+1] = moviePixels[i*3+1];
                     outputPixels[i*3+2] = moviePixels[i*3+2];
+                    }
                 } else {
                     outputPixels[i*3+0] = backgroundPixels[i*3+0];
                     outputPixels[i*3+1] = backgroundPixels[i*3+1];
@@ -78,8 +87,9 @@ void testApp::draw(){
             gifEncoder.save("test3_ah.gif");
             recording = false;
         }
-        
     
+        
+       
        if(drawPolygon){
            ofSetColor(255, 255, 255);
            ofNoFill();
@@ -91,37 +101,58 @@ void testApp::draw(){
        }
     
 }
-    
 
 
-bool testApp::pointInPolygon(vector<ofPoint> *polygon,int N, ofPoint p)
-{
-    int counter = 0;
-    int i;
-    double xinters;
-    ofPoint p1,p2;
+float testApp::distanceFromLine(const ofPoint & p, const ofPoint & l1, const ofPoint & l2){
+    float xDelta = l2.x - l1.x;
+    float yDelta = l2.y - l1.y;
+
+    //	final double u = ((p3.getX() - p1.getX()) * xDelta + (p3.getY() - p1.getY()) * yDelta) / (xDelta * xDelta + yDelta * yDelta);
+    float u = ((p.x - l1.x) * xDelta + (p.y - l1.y)*yDelta) / (xDelta * xDelta + yDelta * yDelta);
     
-    p1 = polygon->at(0);
-    for (i=1;i<=N;i++) {
-        p2 = polygon->at(i % N);
-        if (p.y > MIN(p1.y,p2.y)) {
-            if (p.y <= MAX(p1.y,p2.y)) {
-                if (p.x <= MAX(p1.x,p2.x)) {
-                    if (p1.y != p2.y) {
-                        xinters = (p.y-p1.y)*(p2.x-p1.x)/(p2.y-p1.y)+p1.x;
-                        if (p1.x == p2.x || p.x <= xinters)
-                            counter++;
-                    }
-                }
-            }
+    ofPoint closestPointOnLine;
+    if (u < 0) {
+	    closestPointOnLine = l1;
+	} else if (u > 1) {
+	    closestPointOnLine = l2;
+	} else {
+        closestPointOnLine = ofPoint(l1.x + u * xDelta, l1.y + u * yDelta);
+	}
+    
+   
+    ofPoint d = p - closestPointOnLine;
+    return sqrt(d.x * d.x + d.y * d.y); // distance
+}
+
+
+float testApp::distanceFromPoly(const ofPoint & p, const vector<ofPoint> & poly){
+    float result = 10000;
+    
+    // check each line
+    for(int i = 0; i < poly.size(); i++){
+        int previousIndex = i -1;
+        if(previousIndex < 0){
+            previousIndex = poly.size() - 1;
         }
-        p1 = p2;
+        
+        ofPoint currentPoint = poly.at(i);
+        ofPoint previousPoint = poly.at(previousIndex);
+        
+        
+        float segmentDistance = distanceFromLine(ofPoint(p.x,p.y), previousPoint, currentPoint);
+        
+        
+        if(segmentDistance < result){
+            result = segmentDistance;
+        }
+         
+        
+        
+        
+        
     }
     
-    if (counter % 2 == 0)
-        return false;
-    else
-        return true;
+    return result;
 }
 
 //--------------------------------------------------------------
@@ -139,7 +170,12 @@ void testApp::keyReleased(int key){
 
 //--------------------------------------------------------------
 void testApp::mouseMoved(int x, int y ){
-   
+    //vector<ofPoint> diagnolLine;
+    //diagnolLine.push_back(ofPoint(0,0));
+    //diagnolLine.push_back(ofPoint(ofGetWidth(), ofGetHeight()));
+  
+    cout << distanceFromPoly(ofPoint(x,y), polygonPoints) << endl;
+    //cout << distanceFromLine(ofPoint(x,y), ofPoint(0,0), ofPoint(ofGetWidth(), ofGetHeight())) << endl;
 }
 
 //--------------------------------------------------------------

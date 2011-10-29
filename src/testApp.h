@@ -38,8 +38,9 @@ class testApp : public ofBaseApp{
     
         int movieFrame;
         bool drawPolygon;
-
-        bool pointInPolygon(vector<ofPoint> *polygon,int polysides, ofPoint p);
+        bool recording;
     
-    bool recording;
+        float distanceFromPoly(const ofPoint & p, const vector<ofPoint> & poly);
+        float distanceFromLine(const ofPoint & p, const ofPoint & l1, const ofPoint & l2);
+
 };
