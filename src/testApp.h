@@ -24,7 +24,15 @@ class testApp : public ofBaseApp{
         ofxGifEncoder gifEncoder;
         ofVideoPlayer 		movie;
         vector<ofPoint> polygonPoints;
+        ofImage result;
+        ofImage background;
+    unsigned char * moviePixels;
+    unsigned char * backgroundPixels;
+    unsigned char * outputPixels;
     
-    bool addingPoints;
+    bool drawPolygon;
+
+    bool pointInPolygon(vector<ofPoint> *polygon,int polysides, ofPoint p);
+    
 
 };
