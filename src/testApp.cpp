@@ -18,8 +18,13 @@ void testApp::setup(){
     
     gifFrameDensity = 2;
     targetNumFrames = movie.getTotalNumFrames() / gifFrameDensity;
+    
+    float movieFrameRate = movie.getTotalNumFrames()/movie.getDuration();
+    
+    cout << movieFrameRate <<endl;
+    
     movieFrame = 0;    
-    gifEncoder.setup(movie.getWidth(), movie.getHeight(), 1/(24.0/gifFrameDensity), 125);
+    gifEncoder.setup(movie.getWidth(), movie.getHeight(), (gifFrameDensity+1)/movieFrameRate, 125);
     
     recording = false;
 
