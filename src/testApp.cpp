@@ -1,9 +1,6 @@
 #include "testApp.h"
 
 
-// TODO:
-// - make an image from the first frame of the movie
-// - or the frame shown at the time of a click
 //--------------------------------------------------------------
 void testApp::setup(){
     ofBackground(0, 0, 0);
@@ -16,14 +13,18 @@ void testApp::setup(){
     background.allocate(movie.getWidth(), movie.getHeight(), OF_IMAGE_COLOR);
 
     outputPixels = result.getPixels();
-    drawPolygon = true;
-
+    drawPolygon = true;    
+    gifEncoder.setup(movie.getWidth(), movie.getHeight(), 3, movie.getTotalNumFrames());
+    gifEncoder.setDitherMode(OFX_GIF_DITHER_BAYER4x4);
+    
+    framesRecorded = 0;
 }
 
 //--------------------------------------------------------------
 void testApp::update(){
     movie.idleMovie();
     moviePixels = movie.getPixels();
+    cout << framesRecorded << "/" << movie.getTotalNumFrames() << endl;
 }
 
 //--------------------------------------------------------------
@@ -50,11 +51,23 @@ void testApp::draw(){
     
             result.setFromPixels(outputPixels, movie.getWidth(), movie.getHeight(), OF_IMAGE_COLOR, true);
             result.draw(0,0);
+           
 
         } else {
             movie.draw(0,0);
 
         }
+    
+        if(recording && (framesRecorded < movie.getTotalNumFrames())){
+            gifEncoder.addFrame(outputPixels, movie.getWidth(), movie.getHeight());
+            framesRecorded+= 50;
+        }
+    
+        if(recording && framesRecorded >= movie.getTotalNumFrames()){
+            gifEncoder.save("test3.gif");
+            recording = false;
+        }
+        
     
        if(drawPolygon){
            ofSetColor(255, 255, 255);
@@ -100,16 +113,16 @@ bool testApp::pointInPolygon(vector<ofPoint> *polygon,int N, ofPoint p)
         return true;
 }
 
-
-
 //--------------------------------------------------------------
 void testApp::keyPressed(int key){
-
+  
 }
 
 //--------------------------------------------------------------
 void testApp::keyReleased(int key){
-
+    if(key == ' '){
+        recording = !recording;
+    }
 }
 
 //--------------------------------------------------------------
