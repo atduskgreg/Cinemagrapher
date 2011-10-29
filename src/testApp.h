@@ -33,7 +33,10 @@ class testApp : public ofBaseApp{
         unsigned char * outputPixels;
     
     
-    int framesRecorded;
+        int gifFrameDensity;
+        int targetNumFrames;
+    
+        int movieFrame;
         bool drawPolygon;
 
         bool pointInPolygon(vector<ofPoint> *polygon,int polysides, ofPoint p);

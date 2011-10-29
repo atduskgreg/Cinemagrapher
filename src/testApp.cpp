@@ -14,17 +14,21 @@ void testApp::setup(){
 
     outputPixels = result.getPixels();
     drawPolygon = true;    
-    gifEncoder.setup(movie.getWidth(), movie.getHeight(), 3, movie.getTotalNumFrames());
-    gifEncoder.setDitherMode(OFX_GIF_DITHER_BAYER4x4);
+    //gifEncoder.setDitherMode(OFX_GIF_DITHER_BAYER4x4);
     
-    framesRecorded = 0;
+    gifFrameDensity = 2;
+    targetNumFrames = movie.getTotalNumFrames() / gifFrameDensity;
+    movieFrame = 0;    
+    gifEncoder.setup(movie.getWidth(), movie.getHeight(), 1/(24.0/gifFrameDensity), 125);
+    
+    recording = false;
+
 }
 
 //--------------------------------------------------------------
 void testApp::update(){
     movie.idleMovie();
     moviePixels = movie.getPixels();
-    cout << framesRecorded << "/" << movie.getTotalNumFrames() << endl;
 }
 
 //--------------------------------------------------------------
@@ -57,14 +61,16 @@ void testApp::draw(){
             movie.draw(0,0);
 
         }
-    
-        if(recording && (framesRecorded < movie.getTotalNumFrames())){
+        
+        if(recording && (movieFrame < targetNumFrames)){
+            cout << movieFrame << "/" << targetNumFrames << endl;
             gifEncoder.addFrame(outputPixels, movie.getWidth(), movie.getHeight());
-            framesRecorded+= 50;
+            movieFrame+= gifFrameDensity;
         }
     
-        if(recording && framesRecorded >= movie.getTotalNumFrames()){
-            gifEncoder.save("test3.gif");
+        if(recording && movieFrame >= targetNumFrames){
+            cout << "savng..." << endl;
+            gifEncoder.save("test3_ah.gif");
             recording = false;
         }
         
@@ -120,8 +126,9 @@ void testApp::keyPressed(int key){
 
 //--------------------------------------------------------------
 void testApp::keyReleased(int key){
+    cout << "recording: "  << recording << endl;
     if(key == ' '){
-        recording = !recording;
+        recording = true;
     }
 }
 
